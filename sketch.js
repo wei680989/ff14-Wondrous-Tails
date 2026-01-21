@@ -13,15 +13,14 @@ const lines = [
 
 function setup() {
     let canvas = createCanvas(650, 750);
-    // 禁用右鍵選單
     canvas.elt.oncontextmenu = () => false;
 
-    // --- 滑桿 UI 定位修正 ---
+    // --- 【修正 1：拉條跑掉】使用 CSS 絕對定位鎖定位置 ---
     pointSlider = createSlider(0, 9, 2);
     pointSlider.parent(canvas.parent());
     pointSlider.style('position', 'absolute');
     pointSlider.style('left', '40px');
-    pointSlider.style('top', '665px'); // 微調高度，避開文字重疊
+    pointSlider.style('top', '670px'); // 鎖定在畫布內的特定高度
     pointSlider.style('width', '200px');
 
     for (let i = 0; i < 16; i++) {
@@ -55,7 +54,7 @@ function draw() {
     }
 
     drawInstructions();
-    drawPointsUI();
+    drawPointsUI();  // 這裡包含文字重疊修正
     drawResetBtn();
     drawModeToggle();
 }
@@ -105,7 +104,8 @@ function drawSmartAnalysis() {
     let riskTip = "";
     let adviceCol = "#666";
 
-    if (targetMode === 1) { // --- 全衝 3 線模式 ---
+    // 邏輯保持你原本的要求：全衝模式下 3 線機率 0 即為死局
+    if (targetMode === 1) {
         if (p3 === 0) {
             advice = "【死局】無 3 線可能";
             riskTip = "目標是 3 線，此佈局機率為 0，請務必洗牌。";
@@ -123,11 +123,11 @@ function drawSmartAnalysis() {
             riskTip = "已有三線機會，祝你好運。";
             adviceCol = "#2ecc71";
         }
-    } else { // --- 保 2 拚 3 模式 ---
+    } else {
         if (p3 === 0) {
             if (p2 >= 20) {
                 advice = "【保留】穩拿二線";
-                riskTip = "雖無三線，但二線極穩，建議拿獎勵。";
+                riskTip = "雖無三線，但二線機率極穩，建議拿獎勵。";
                 adviceCol = "#3498db";
             } else {
                 advice = "【死局】建議洗牌";
@@ -153,7 +153,6 @@ function drawSmartAnalysis() {
         }
     }
 
-    // 繪製建議區
     strokeWeight(2); stroke(adviceCol); fill(255);
     rect(40, height - 210, 320, 110, 15);
     noStroke(); fill(adviceCol); textAlign(LEFT);
@@ -161,7 +160,6 @@ function drawSmartAnalysis() {
     textSize(13); textStyle(NORMAL); text(riskTip, 60, height - 150);
     textSize(14); text(`3 線: ${probabilities.p3}%  |  2 線: ${probabilities.p2}%`, 60, height - 120);
 
-    // 紅圈標示達成 3 線的關鍵空格
     bestCombos.forEach(spot => {
         noFill(); stroke(231, 76, 60, 200); strokeWeight(4);
         ellipse(cells[spot].x + 37, cells[spot].y + 37, 55);
@@ -191,16 +189,18 @@ function calculateProb() {
     probabilities.p3 = (counts.p3 / total * 100).toFixed(1);
 }
 
+// --- 【修正 2：文字重疊】重新安排垂直座標 ---
 function drawPointsUI() {
     let pts = pointSlider.value();
     fill(50); textAlign(LEFT); textSize(16); textStyle(BOLD);
-    text(`剩餘奇想點: ${pts}`, 40, 650);
+    text(`剩餘奇想點: ${pts}`, 40, 655); // 文字上移
     textStyle(NORMAL); textSize(12); fill(100);
-    text("(洗牌需消耗 2 點)", 40, 715);
+    text("(洗牌需消耗 2 點)", 40, 715); // 提示下移，避開滑桿
 }
 
 function drawResetBtn() {
     fill(200); noStroke();
+    // 微調按鈕 y 座標避開滑桿
     if (mouseX > 280 && mouseX < 360 && mouseY > 635 && mouseY < 670) fill(170);
     rect(280, 635, 80, 35, 8);
     fill(255); textAlign(CENTER, CENTER); textSize(14); text("重置", 320, 652);
