@@ -15,21 +15,23 @@
             background-color: #f0f0f0;
         }
 
-        /* 確保畫布容器是定位基準點 */
-        main {
+        #canvas-holder {
             position: relative;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
+        /* 讓 p5 自動產生的元素不要亂跑 */
         canvas {
             display: block;
             max-width: 100vw;
             height: auto !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 
 <body>
+    <div id="canvas-holder"></div>
     <script src="sketch.js"></script>
 </body>
 

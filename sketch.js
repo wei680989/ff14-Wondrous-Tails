@@ -16,19 +16,12 @@ function setup() {
     // 禁用右鍵選單
     canvas.elt.oncontextmenu = () => false;
 
-    // 1. 建立拉條
+    // --- 滑桿 UI 定位修正 ---
     pointSlider = createSlider(0, 9, 2);
-
-    // 2. 關鍵修正：將拉條綁定到與畫布相同的父層元素
     pointSlider.parent(canvas.parent());
-
-    // 3. 使用 CSS 樣式進行絕對定位，使其相對於畫布容器移動
     pointSlider.style('position', 'absolute');
-
-    // 調整座標 (相對於畫布內容)
-    // 這裡我們直接操作 CSS 的 left 和 top 屬性
     pointSlider.style('left', '40px');
-    pointSlider.style('top', '660px');
+    pointSlider.style('top', '665px'); // 微調高度，避開文字重疊
     pointSlider.style('width', '200px');
 
     for (let i = 0; i < 16; i++) {
@@ -68,7 +61,7 @@ function draw() {
 }
 
 function drawUI() {
-    fill("#4a69bd"); rect(0, 0, width, 70);
+    fill("#4a69bd"); noStroke(); rect(0, 0, width, 70);
     fill(255); textAlign(CENTER); textSize(24); textStyle(BOLD);
     text("流光旅人公會: 天書奇談分析器", 325, 45);
 }
@@ -97,7 +90,7 @@ function drawInstructions() {
 
 function drawModeToggle() {
     let x = 400, y = 500, w = 220, h = 50;
-    fill(targetMode === 0 ? "#3498db" : "#e67e22"); // 保2用藍色，全衝用橘色
+    fill(targetMode === 0 ? "#3498db" : "#e67e22");
     rect(x, y, w, h, 8);
     fill(255); textAlign(CENTER, CENTER); textStyle(BOLD); textSize(16);
     let modeText = targetMode === 0 ? "模式：保 2 拚 3" : "模式：全衝 3 線";
@@ -115,26 +108,26 @@ function drawSmartAnalysis() {
     if (targetMode === 1) { // --- 全衝 3 線模式 ---
         if (p3 === 0) {
             advice = "【死局】無 3 線可能";
-            riskTip = "目標是 3 線，此版面機率為 0，請洗牌。";
+            riskTip = "目標是 3 線，此佈局機率為 0，請務必洗牌。";
             adviceCol = "#e74c3c";
         } else if (p3 >= 8) {
             advice = "【神陣】絕對保留";
             riskTip = "三線機率極高，這就是你要的。";
             adviceCol = "#2ecc71";
         } else if (pts >= 4 && p3 < 4) {
-            advice = "【洗牌】機率太低";
-            riskTip = "點數充足，洗出更高機率再開。";
+            advice = "【洗牌】期待更高";
+            riskTip = "點數充足，洗出更高機率再拚。";
             adviceCol = "#f39c12";
         } else {
             advice = "【直接開獎】";
-            riskTip = "有機會但點數不多，直接賭了。";
+            riskTip = "已有三線機會，祝你好運。";
             adviceCol = "#2ecc71";
         }
     } else { // --- 保 2 拚 3 模式 ---
         if (p3 === 0) {
             if (p2 >= 20) {
                 advice = "【保留】穩拿二線";
-                riskTip = "雖然 3 線已封死，但 2 線機率不錯。";
+                riskTip = "雖無三線，但二線極穩，建議拿獎勵。";
                 adviceCol = "#3498db";
             } else {
                 advice = "【死局】建議洗牌";
@@ -147,15 +140,15 @@ function drawSmartAnalysis() {
             adviceCol = "#2ecc71";
         } else if (p2 >= 30) {
             advice = "【保留】二線極穩";
-            riskTip = "為了二線獎勵，不建議洗牌。";
+            riskTip = "為了二線獎勵，不建議冒險洗牌。";
             adviceCol = "#3498db";
         } else if (pts >= 4) {
-            advice = "【洗牌】期待更好";
+            advice = "【洗牌】機率一般";
             riskTip = "二三線機率都普通，點數夠就洗。";
             adviceCol = "#f39c12";
         } else {
             advice = "【直接開獎】";
-            riskTip = "沒點數洗了，祝你好運。";
+            riskTip = "點數不多了，直接開獎拼運氣。";
             adviceCol = "#95a5a6";
         }
     }
@@ -187,7 +180,11 @@ function calculateProb() {
             let lineCount = 0;
             for (let line of lines) if (line.every(pos => testPattern.includes(pos))) lineCount++;
             if (lineCount >= 2) counts.p2++;
-            if (lineCount >= 3) { counts.p3++; bestCombos.push(remaining[i], remaining[j]); }
+            if (lineCount >= 3) {
+                counts.p3++;
+                if (!bestCombos.includes(remaining[i])) bestCombos.push(remaining[i]);
+                if (!bestCombos.includes(remaining[j])) bestCombos.push(remaining[j]);
+            }
         }
     }
     probabilities.p2 = (counts.p2 / total * 100).toFixed(1);
@@ -199,14 +196,14 @@ function drawPointsUI() {
     fill(50); textAlign(LEFT); textSize(16); textStyle(BOLD);
     text(`剩餘奇想點: ${pts}`, 40, 650);
     textStyle(NORMAL); textSize(12); fill(100);
-    text("(洗牌需消耗 2 點)", 40, 705);
+    text("(洗牌需消耗 2 點)", 40, 715);
 }
 
 function drawResetBtn() {
     fill(200); noStroke();
-    if (mouseX > 280 && mouseX < 360 && mouseY > 640 && mouseY < 675) fill(170);
-    rect(280, 640, 80, 35, 8);
-    fill(255); textAlign(CENTER, CENTER); textSize(14); text("重置", 320, 657);
+    if (mouseX > 280 && mouseX < 360 && mouseY > 635 && mouseY < 670) fill(170);
+    rect(280, 635, 80, 35, 8);
+    fill(255); textAlign(CENTER, CENTER); textSize(14); text("重置", 320, 652);
 }
 
 function mousePressed() {
@@ -217,6 +214,6 @@ function mousePressed() {
             else if (selected.length < 7) selected.push(i);
         }
     }
-    if (mouseX > 280 && mouseX < 360 && mouseY > 640 && mouseY < 675) selected = [];
+    if (mouseX > 280 && mouseX < 360 && mouseY > 635 && mouseY < 670) selected = [];
     if (mouseX > 400 && mouseX < 620 && mouseY > 500 && mouseY < 550) targetMode = targetMode === 0 ? 1 : 0;
 }
