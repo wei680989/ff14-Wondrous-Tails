@@ -12,15 +12,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* 讓所有內容居中 */
             background-color: #f0f0f0;
         }
 
-        canvas {
+        /* 確保畫布容器是定位基準點 */
+        main {
             position: relative;
-            /* 重要：讓 Slider 定位參考 */
+        }
+
+        canvas {
+            display: block;
             max-width: 100vw;
             height: auto !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>

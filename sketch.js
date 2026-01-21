@@ -13,11 +13,22 @@ const lines = [
 
 function setup() {
     let canvas = createCanvas(650, 750);
+    // 禁用右鍵選單
     canvas.elt.oncontextmenu = () => false;
 
+    // 1. 建立拉條
     pointSlider = createSlider(0, 9, 2);
+
+    // 2. 關鍵修正：將拉條綁定到與畫布相同的父層元素
     pointSlider.parent(canvas.parent());
-    pointSlider.position(50, 670);
+
+    // 3. 使用 CSS 樣式進行絕對定位，使其相對於畫布容器移動
+    pointSlider.style('position', 'absolute');
+
+    // 調整座標 (相對於畫布內容)
+    // 這裡我們直接操作 CSS 的 left 和 top 屬性
+    pointSlider.style('left', '40px');
+    pointSlider.style('top', '660px');
     pointSlider.style('width', '200px');
 
     for (let i = 0; i < 16; i++) {
