@@ -13,15 +13,17 @@ const lines = [
 
 function setup() {
     let canvas = createCanvas(650, 750);
+    canvas.parent('canvas-holder'); // 強制關聯到 HTML 容器
     canvas.elt.oncontextmenu = () => false;
 
-    // --- 【修正 1：拉條跑掉】使用 CSS 絕對定位鎖定位置 ---
+    // --- 【修正 1：拉條跑掉】優化 CSS 絕對定位 ---
     pointSlider = createSlider(0, 9, 2);
-    pointSlider.parent(canvas.parent());
+    pointSlider.parent('canvas-holder');
     pointSlider.style('position', 'absolute');
     pointSlider.style('left', '40px');
-    pointSlider.style('top', '670px'); // 鎖定在畫布內的特定高度
+    pointSlider.style('top', '680px'); // 修正：精確高度，避開上方文字
     pointSlider.style('width', '200px');
+    pointSlider.style('z-index', '10'); // 確保在畫布之上
 
     for (let i = 0; i < 16; i++) {
         let x = (i % 4) * 85 + 40;
@@ -54,7 +56,7 @@ function draw() {
     }
 
     drawInstructions();
-    drawPointsUI();  // 這裡包含文字重疊修正
+    drawPointsUI();
     drawResetBtn();
     drawModeToggle();
 }
@@ -104,7 +106,6 @@ function drawSmartAnalysis() {
     let riskTip = "";
     let adviceCol = "#666";
 
-    // 邏輯保持你原本的要求：全衝模式下 3 線機率 0 即為死局
     if (targetMode === 1) {
         if (p3 === 0) {
             advice = "【死局】無 3 線可能";
@@ -189,18 +190,18 @@ function calculateProb() {
     probabilities.p3 = (counts.p3 / total * 100).toFixed(1);
 }
 
-// --- 【修正 2：文字重疊】重新安排垂直座標 ---
+// --- 【修正 2：文字重疊】拉開間距 ---
 function drawPointsUI() {
     let pts = pointSlider.value();
     fill(50); textAlign(LEFT); textSize(16); textStyle(BOLD);
-    text(`剩餘奇想點: ${pts}`, 40, 655); // 文字上移
+    text(`剩餘奇想點: ${pts}`, 40, 655); // 文字
+    // 拉條位於 680px
     textStyle(NORMAL); textSize(12); fill(100);
-    text("(洗牌需消耗 2 點)", 40, 715); // 提示下移，避開滑桿
+    text("(洗牌需消耗 2 點)", 40, 725); // 提示下移
 }
 
 function drawResetBtn() {
     fill(200); noStroke();
-    // 微調按鈕 y 座標避開滑桿
     if (mouseX > 280 && mouseX < 360 && mouseY > 635 && mouseY < 670) fill(170);
     rect(280, 635, 80, 35, 8);
     fill(255); textAlign(CENTER, CENTER); textSize(14); text("重置", 320, 652);
