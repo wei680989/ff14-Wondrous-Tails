@@ -9,16 +9,18 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            /* 讓所有內容居中 */
             background-color: #f0f0f0;
         }
 
         canvas {
-            display: block;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin-top: 20px;
+            position: relative;
+            /* 重要：讓 Slider 定位參考 */
+            max-width: 100vw;
+            height: auto !important;
         }
     </style>
 </head>
