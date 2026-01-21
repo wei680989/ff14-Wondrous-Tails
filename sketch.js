@@ -13,17 +13,17 @@ const lines = [
 
 function setup() {
     let canvas = createCanvas(650, 750);
-    canvas.parent('canvas-holder'); // 強制關聯到 HTML 容器
+    canvas.parent('canvas-holder');
     canvas.elt.oncontextmenu = () => false;
 
-    // --- 【修正 1：拉條跑掉】優化 CSS 絕對定位 ---
+    // --- 【修正：拉條位置】配合文字框上移，稍微調整 ---
     pointSlider = createSlider(0, 9, 2);
     pointSlider.parent('canvas-holder');
     pointSlider.style('position', 'absolute');
     pointSlider.style('left', '40px');
-    pointSlider.style('top', '680px'); // 修正：精確高度，避開上方文字
+    pointSlider.style('top', '690px'); // 稍微往下移一點點，給上方文字留空間
     pointSlider.style('width', '200px');
-    pointSlider.style('z-index', '10'); // 確保在畫布之上
+    pointSlider.style('z-index', '10');
 
     for (let i = 0; i < 16; i++) {
         let x = (i % 4) * 85 + 40;
@@ -52,7 +52,8 @@ function draw() {
         drawSmartAnalysis();
     } else {
         fill(100); textAlign(LEFT); textSize(16);
-        text(`請標記目前的 7 個貼紙 (${selected.length}/7)`, 40, height - 230);
+        // 未滿 7 個時的提示字位置也微調
+        text(`請標記目前的 7 個貼紙 (${selected.length}/7)`, 40, height - 250);
     }
 
     drawInstructions();
@@ -98,6 +99,7 @@ function drawModeToggle() {
     text(modeText, x + w / 2, y + h / 2);
 }
 
+// --- 【核心修正：文字框上移】 ---
 function drawSmartAnalysis() {
     let p3 = float(probabilities.p3);
     let p2 = float(probabilities.p2);
@@ -155,11 +157,14 @@ function drawSmartAnalysis() {
     }
 
     strokeWeight(2); stroke(adviceCol); fill(255);
-    rect(40, height - 210, 320, 110, 15);
+    // 這裡原本是 height - 210，現在改為 -245，整體框往上提 35px
+    let boxY = height - 245;
+    rect(40, boxY, 320, 110, 15);
+
     noStroke(); fill(adviceCol); textAlign(LEFT);
-    textSize(18); textStyle(BOLD); text(advice, 60, height - 175);
-    textSize(13); textStyle(NORMAL); text(riskTip, 60, height - 150);
-    textSize(14); text(`3 線: ${probabilities.p3}%  |  2 線: ${probabilities.p2}%`, 60, height - 120);
+    textSize(18); textStyle(BOLD); text(advice, 60, boxY + 35);
+    textSize(13); textStyle(NORMAL); text(riskTip, 60, boxY + 60);
+    textSize(14); text(`3 線: ${probabilities.p3}%  |  2 線: ${probabilities.p2}%`, 60, boxY + 90);
 
     bestCombos.forEach(spot => {
         noFill(); stroke(231, 76, 60, 200); strokeWeight(4);
@@ -190,21 +195,22 @@ function calculateProb() {
     probabilities.p3 = (counts.p3 / total * 100).toFixed(1);
 }
 
-// --- 【修正 2：文字重疊】拉開間距 ---
+// --- 【修正：座標拉開】避免重疊 ---
 function drawPointsUI() {
     let pts = pointSlider.value();
     fill(50); textAlign(LEFT); textSize(16); textStyle(BOLD);
-    text(`剩餘奇想點: ${pts}`, 40, 655); // 文字
-    // 拉條位於 680px
+    text(`剩餘奇想點: ${pts}`, 40, 675); // 稍微往下移一點，配合上方的文字框
     textStyle(NORMAL); textSize(12); fill(100);
-    text("(洗牌需消耗 2 點)", 40, 725); // 提示下移
+    text("(洗牌需消耗 2 點)", 40, 735); // 提示下移，確保在滑桿下方
 }
 
 function drawResetBtn() {
     fill(200); noStroke();
-    if (mouseX > 280 && mouseX < 360 && mouseY > 635 && mouseY < 670) fill(170);
-    rect(280, 635, 80, 35, 8);
-    fill(255); textAlign(CENTER, CENTER); textSize(14); text("重置", 320, 652);
+    // 重置按鈕 y 座標也同步微調，確保在合理區間
+    let btnY = 655;
+    if (mouseX > 280 && mouseX < 360 && mouseY > btnY && mouseY < btnY + 35) fill(170);
+    rect(280, btnY, 80, 35, 8);
+    fill(255); textAlign(CENTER, CENTER); textSize(14); text("重置", 320, btnY + 17);
 }
 
 function mousePressed() {
@@ -215,6 +221,8 @@ function mousePressed() {
             else if (selected.length < 7) selected.push(i);
         }
     }
-    if (mouseX > 280 && mouseX < 360 && mouseY > 635 && mouseY < 670) selected = [];
+    // 滑鼠判定也要配合按鈕座標變動
+    let btnY = 655;
+    if (mouseX > 280 && mouseX < 360 && mouseY > btnY && mouseY < btnY + 35) selected = [];
     if (mouseX > 400 && mouseX < 620 && mouseY > 500 && mouseY < 550) targetMode = targetMode === 0 ? 1 : 0;
 }
